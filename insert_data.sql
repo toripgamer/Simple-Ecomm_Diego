@@ -92,52 +92,124 @@ INSERT INTO tbl_product (pd_id, cat_id, pd_name, pd_description, pd_price, pd_qt
 (7, 3, 'MacBook Pro 16" M3', 
 'MacBook Pro 16 pulgadas con chip M3 Pro. 18GB de memoria unificada, 512GB SSD, pantalla Liquid Retina XDR. Ideal para profesionales creativos y desarrolladores.', 
 2499.99, 6, 'home-shopmac.png');
+-- Eliminar tablas si existen (esto eliminará las tablas que hayas creado previamente)
+-- Crear tabla de categorías
+CREATE TABLE tbl_category (
+  cat_id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  cat_name VARCHAR(50) NOT NULL,
+  cat_description VARCHAR(200) NOT NULL DEFAULT '',
+  PRIMARY KEY (cat_id),
+  KEY cat_name (cat_name)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4;
 
--- Producto 8: Dispositivo de Rendimiento
-INSERT INTO tbl_product (pd_id, cat_id, pd_name, pd_description, pd_price, pd_qty, pd_image) VALUES
-(8, 1, 'Monitor Gaming 4K', 
-'Monitor de alto rendimiento 4K UHD de 27 pulgadas. Tasa de refresco de 144Hz, tiempo de respuesta 1ms, HDR400. Perfecto para gaming y diseño gráfico profesional.', 
-599.99, 10, 'gallery_performance.png');
+-- Crear tabla de usuarios
+CREATE TABLE tbl_user (
+  user_id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_name VARCHAR(100) NOT NULL,
+  password VARCHAR(100) NOT NULL,
+  user_email VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP NULL DEFAULT current_timestamp(),
+  updated_at TIMESTAMP NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  user_is_admin INT(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Producto 9: Software Premium
-INSERT INTO tbl_product (pd_id, cat_id, pd_name, pd_description, pd_price, pd_qty, pd_image) VALUES
-(9, 4, 'Suite Creative Cloud', 
-'Licencia anual de Adobe Creative Cloud completa. Incluye Photoshop, Illustrator, Premiere Pro, After Effects y más. Ideal para profesionales creativos.', 
-599.99, 100, 'gallery_software.png');
+-- Crear tabla de productos
+CREATE TABLE tbl_product (
+  pd_id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  cat_id INT(11) UNSIGNED NOT NULL,
+  pd_name VARCHAR(100) NOT NULL,
+  pd_description VARCHAR(255) NOT NULL,
+  pd_price DECIMAL(10,2) NOT NULL,
+  pd_qty INT(11) UNSIGNED NOT NULL,
+  pd_image VARCHAR(100) NOT NULL,
+  PRIMARY KEY (pd_id),
+  FOREIGN KEY (cat_id) REFERENCES tbl_category(cat_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Producto 10: Equipo para Hogar
-INSERT INTO tbl_product (pd_id, cat_id, pd_name, pd_description, pd_price, pd_qty, pd_image) VALUES
-(10, 5, 'HomePod Mini', 
-'Altavoz inteligente HomePod Mini. Sonido de 360 grados, Siri integrado, control de casa inteligente. Compatible con Apple Music y más servicios de streaming.', 
-99.99, 30, 'home-shopipod.png');
+-- Crear tabla de órdenes
+CREATE TABLE tbl_order (
+  od_id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT,
+  user_id INT(10) UNSIGNED NOT NULL,
+  od_date DATE NOT NULL,
+  od_status ENUM('New', 'Shipped', 'Completed', 'Cancelled') NOT NULL,
+  od_name VARCHAR(100) NOT NULL,
+  od_address VARCHAR(100) NOT NULL,
+  od_city VARCHAR(50) NOT NULL,
+  od_postal_code VARCHAR(10) NOT NULL,
+  od_cost DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY (od_id),
+  FOREIGN KEY (user_id) REFERENCES tbl_user(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Crear tabla de ítems de orden
+CREATE TABLE tbl_order_item (
+  od_id INT(11) UNSIGNED NOT NULL,
+  pd_id INT(11) UNSIGNED NOT NULL,
+  od_qty INT(11) UNSIGNED NOT NULL,
+  PRIMARY KEY (od_id, pd_id),
+  FOREIGN KEY (od_id) REFERENCES tbl_order(od_id),
+  FOREIGN KEY (pd_id) REFERENCES tbl_product(pd_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Insertar categorías
+INSERT INTO tbl_category (cat_name, cat_description) VALUES
+('Electrónica', 'Productos electrónicos, tablets, computadoras y accesorios tecnológicos'),
+('Dispositivos Móviles', 'Smartphones, tablets y accesorios para dispositivos móviles'),
+('Computadoras', 'Laptops, computadoras de escritorio y accesorios'),
+('Software', 'Licencias de software y aplicaciones'),
+('Equipos para el Hogar', 'Electrodomésticos y equipos para el hogar');
+
+-- Insertar usuarios
+INSERT INTO tbl_user (user_name, password, user_email, user_is_admin) VALUES
+('admin', '0192023a7bbd73250516f069df18b500', 'admin@tienda.com', 1),  -- Administrador
+('testuser', 'cc03e747a6afbbcbf8be7668acfebee5', 'usuario@test.com', 0),  -- Usuario normal 1
+('cliente1', 'c5f3d0c5b870e25f8a3cc49f3e5e3e5b', 'cliente1@email.com', 0);  -- Usuario normal 2
+
+INSERT INTO tbl_category (cat_name, cat_description) VALUES
+('Electrónica', 'Productos electrónicos, tablets, computadoras y accesorios tecnológicos'),
+('Dispositivos Móviles', 'Smartphones, tablets y accesorios para dispositivos móviles'),
+('Computadoras', 'Laptops, computadoras de escritorio y accesorios'),
+('Software', 'Licencias de software y aplicaciones'),
+('Equipos para el Hogar', 'Electrodomésticos y equipos para el hogar');
+
+-- Insertar productos con las categorías correctas
+INSERT INTO tbl_product (cat_id, pd_name, pd_description, pd_price, pd_qty, pd_image) VALUES
+(13, 'Tablet OSX', 'Tablet de última generación con sistema operativo OSX. Pantalla retina de 10 pulgadas...', 599.99, 15, 'gallery_osx.png'),
+(14, 'Laptop Profesional', 'Laptop diseñada para presentaciones profesionales...', 1299.99, 8, 'gallery_performance.png'),
+(15, 'Software de Galería Profesional', 'Software completo para gestión de galerías...', 149.99, 50, 'gallery_software.png'),
+(14, 'iPad Air 2024', 'iPad Air última generación...', 699.99, 12, 'home-shopipad.png'),
+(14, 'iPhone 15 Pro', 'iPhone 15 Pro con pantalla Super Retina...', 1199.99, 20, 'home-shopphone.png'),
+(13, 'iPod Classic Edition', 'Reproductor de música clásico renovado...', 349.99, 5, 'home-shopipod.png'),
+(15, 'MacBook Pro 16" M3', 'MacBook Pro 16 pulgadas...', 2499.99, 6, 'home-shopmac.png'),
+(13, 'Monitor Gaming 4K', 'Monitor de alto rendimiento...', 599.99, 10, 'gallery_performance.png'),
+(15, 'Suite Creative Cloud', 'Licencia anual de Adobe Creative Cloud...', 599.99, 100, 'gallery_software.png'),
+(16, 'HomePod Mini', 'Altavoz inteligente HomePod Mini...', 99.99, 30, 'home-shopipod.png');
 
 -- ============================================================
 -- 4. INSERTAR ÓRDENES DE EJEMPLO
 -- ============================================================
+-- Insert orders
+INSERT INTO tbl_order (user_id, od_date, od_status, od_name, od_address, od_city, od_postal_code, od_cost) 
+VALUES 
+(2, '2026-01-15', 'Completed', 'Test User', 'Av. Principal 123', 'Latacunga', '050150', 1499.98), 
+(3, '2026-01-25', 'New', 'Cliente Uno', 'Calle Secundaria 456', 'Quito', '170150', 1899.98),
+(2, '2026-01-23', 'Shipped', 'Test User', 'Av. Principal 123', 'Latacunga', '050150', 2599.98);
 
--- Orden 1 - Usuario testuser (Completada)
-INSERT INTO tbl_order (od_id, user_id, od_date, od_status, od_name, od_address, od_city, od_postal_code, od_cost) VALUES
-(1, 2, '2026-01-15', 'Completed', 'Test User', 'Av. Principal 123', 'Latacunga', '050150', '1499.98');
+-- Insert items for Order 1
+INSERT INTO tbl_order_item (od_id, pd_id, od_qty) 
+VALUES 
+(1, 41, 1),  -- Tablet OSX
+(1, 42, 1);  -- Laptop Profesional
 
--- Items de la Orden 1
-INSERT INTO tbl_order_item (od_id, pd_id, od_qty) VALUES
-(1, 2, 1),  -- Laptop Profesional x1
-(1, 4, 1);  -- iPad Air x1
+-- Insert items for Order 2
+INSERT INTO tbl_order_item (od_id, pd_id, od_qty) 
+VALUES 
+(2, 43, 1),  -- Software de Galería Profesional
+(2, 44, 1);  -- iPad Air 2024
 
--- Orden 2 - Usuario cliente1 (Nueva)
-INSERT INTO tbl_order (od_id, user_id, od_date, od_status, od_name, od_address, od_city, od_postal_code, od_cost) VALUES
-(2, 3, '2026-01-25', 'New', 'Cliente Uno', 'Calle Secundaria 456', 'Quito', '170150', '1899.98');
-
--- Items de la Orden 2
-INSERT INTO tbl_order_item (od_id, pd_id, od_qty) VALUES
-(2, 5, 1),  -- iPhone 15 Pro x1
-(2, 1, 1);  -- Tablet OSX x1
-
--- Orden 3 - Usuario testuser (En envío)
-INSERT INTO tbl_order (od_id, user_id, od_date, od_status, od_name, od_address, od_city, od_postal_code, od_cost) VALUES
-(3, 2, '2026-01-23', 'Shipped', 'Test User', 'Av. Principal 123', 'Latacunga', '050150', '2599.98');
-
--- Items de la Orden 3
-INSERT INTO tbl_order_item (od_id, pd_id, od_qty) VALUES
-(3, 7, 1),  -- MacBook Pro x1
-(3, 10, 1); -- HomePod Mini x1
+-- Insert items for Order 3
+INSERT INTO tbl_order_item (od_id, pd_id, od_qty) 
+VALUES 
+(3, 45, 1),  -- iPhone 15 Pro
+(3, 46, 1);  -- iPod Classic Edition
