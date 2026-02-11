@@ -1,6 +1,8 @@
 # Usar imagen oficial de PHP 8.2 con Apache
 FROM php:8.2-apache
 
+#holi
+
 # Instalar extensiones de PHP necesarias para MySQL
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
